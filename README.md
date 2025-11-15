@@ -48,8 +48,8 @@ source .venv/bin/activate
 # Install dependencies (if requirements.txt exists)
 pip install -r requirements.txt
 
-# Run the simple app
-python simple_app.py
+# Run the main
+python main.py
 
 # Deactivate when done
 deactivate
