@@ -4,18 +4,22 @@ from models.layout import Layout
 from models.agent import Agent
 from models.simulation import Simulation
 from windows.map import MapWindow
-from generators.layout import full_storage
+from generators.layout import floor_boxes
+from generators.agent import initialize_positions
 
 
 def main():
     # Create a sample layout
-    layout = full_storage(11, 10)
+    layout = floor_boxes(31, 30)
     
-    # Create one agent
-    agent = Agent(id=1, x=5, y=5)
+    # Create 5 agents
+    agents = [Agent(id=i, x=0, y=0) for i in range(50)]
+
+    # Initialize agent positions
+    initialize_positions(agents, layout)
     
     # Create simulation
-    simulation = Simulation(layout, [agent])
+    simulation = Simulation(layout, agents)
     
     # Create Qt application
     app = QApplication(sys.argv)

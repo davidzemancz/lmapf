@@ -23,10 +23,10 @@ class Simulation:
                     moved = self.try_move(agent, agent.x - 1, agent.y)
                 elif direction == 'right':
                     moved = self.try_move(agent, agent.x + 1, agent.y)
-                    
+
     def try_move(self, agent: Agent, new_x: int, new_y: int) -> bool:
         """Attempt to move an agent to a new position if within bounds"""
-        if 0 <= new_x < self.layout.width and 0 <= new_y < self.layout.height:
+        if self.layout.is_traversable(new_x, new_y) and not any(other_agent.x == new_x and other_agent.y == new_y for other_agent in self.agents if other_agent != agent):
             agent.x = new_x
             agent.y = new_y
             return True
