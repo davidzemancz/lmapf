@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt, QRect, QTimer
 from PySide6.QtGui import QPainter, QColor, QPen
 from models.simulation import Simulation
@@ -9,6 +9,8 @@ class MapWindow(QMainWindow):
     def __init__(self, simulation: Simulation, cell_size: int = 40, tick_interval: int = 500):
         super().__init__()
         self.simulation = simulation
+        self.tick_interval = tick_interval
+        self.step_count = 0
         
         self.setWindowTitle("Map Layout")
         
@@ -21,44 +23,88 @@ class MapWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        main_layout = QVBoxLayout(central_widget)
+        main_layout = QHBoxLayout(central_widget)
         
-        # Create canvas for drawing
-        self.canvas = MapCanvas(simulation)
-        main_layout.addWidget(self.canvas)
+        # Create left panel for buttons
+        left_panel = QWidget()
+        left_panel.setFixedWidth(150)
+        button_layout = QVBoxLayout(left_panel)
+        button_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         
-        # Create button layout
-        button_layout = QHBoxLayout()
+        # Simulation Control section
+        sim_control_label = QLabel("Simulation Control")
+        sim_control_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        button_layout.addWidget(sim_control_label)
         
-        # Create buttons
         self.start_button = QPushButton("Start")
         self.stop_button = QPushButton("Stop")
         self.step_button = QPushButton("Step")
         self.reset_button = QPushButton("Reset")
         
-        # Add buttons to layout
         button_layout.addWidget(self.start_button)
         button_layout.addWidget(self.stop_button)
         button_layout.addWidget(self.step_button)
         button_layout.addWidget(self.reset_button)
         
-        # Add button layout to main layout
-        main_layout.addLayout(button_layout)
+        # Add separator
+        separator1 = QFrame()
+        separator1.setFrameShape(QFrame.Shape.HLine)
+        separator1.setFrameShadow(QFrame.Shadow.Sunken)
+        button_layout.addWidget(separator1)
+        
+        # Speed Control section
+        speed_control_label = QLabel("Speed Control")
+        speed_control_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        button_layout.addWidget(speed_control_label)
+        
+        self.speed_up_button = QPushButton("Speed Up")
+        self.slow_down_button = QPushButton("Slow Down")
+        
+        button_layout.addWidget(self.speed_up_button)
+        button_layout.addWidget(self.slow_down_button)
+        
+        # Add separator
+        separator2 = QFrame()
+        separator2.setFrameShape(QFrame.Shape.HLine)
+        separator2.setFrameShadow(QFrame.Shadow.Sunken)
+        button_layout.addWidget(separator2)
+        
+        # Statistics section
+        stats_label = QLabel("Statistics")
+        stats_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        button_layout.addWidget(stats_label)
+        
+        self.steps_label = QLabel(f"Steps: {self.step_count}")
+        self.speed_label = QLabel(f"Speed: {self.tick_interval}ms")
+        
+        button_layout.addWidget(self.steps_label)
+        button_layout.addWidget(self.speed_label)
+        
+        # Add left panel to main layout
+        main_layout.addWidget(left_panel)
+        
+        # Create canvas for drawing
+        self.canvas = MapCanvas(simulation)
+        main_layout.addWidget(self.canvas)
         
         # Connect button signals
         self.start_button.clicked.connect(self.on_start)
         self.stop_button.clicked.connect(self.on_stop)
         self.step_button.clicked.connect(self.on_step)
         self.reset_button.clicked.connect(self.on_reset)
+        self.speed_up_button.clicked.connect(self.on_speed_up)
+        self.slow_down_button.clicked.connect(self.on_slow_down)
         
         # Set initial window size based on grid dimensions
-        window_width = simulation.layout.width * cell_size + 20
-        window_height = simulation.layout.height * cell_size + 80  # Extra space for buttons
+        window_width = simulation.layout.width * cell_size + 170  # Extra space for left panel
+        window_height = simulation.layout.height * cell_size + 20
         self.resize(window_width, window_height)
     
     def on_timer_tick(self):
         """Called automatically by timer"""
         self.simulation.random_step()
+        self.step_count += 1
+        self.update_stats()
         self.canvas.update()  # Trigger repaint
     
     def on_start(self):
@@ -74,14 +120,37 @@ class MapWindow(QMainWindow):
     def on_step(self):
         """Handle step button click - perform one step"""
         self.simulation.random_step()
+        self.step_count += 1
+        self.update_stats()
         self.canvas.update()  # Trigger repaint
         print("Step executed")
     
     def on_reset(self):
         """Handle reset button click"""
         self.timer.stop()
+        self.step_count = 0
+        self.update_stats()
         # Reset agents to initial positions - you can implement this as needed
         print("Reset button clicked")
+    
+    def on_speed_up(self):
+        """Handle speed up button click - decrease interval by 20%"""
+        self.tick_interval = max(5, int(self.tick_interval * 0.8))  # Min 5ms
+        self.timer.setInterval(self.tick_interval)
+        self.update_stats()
+        print(f"Speed increased - interval: {self.tick_interval}ms")
+    
+    def on_slow_down(self):
+        """Handle slow down button click - increase interval by 25%"""
+        self.tick_interval = min(5000, int(self.tick_interval * 1.25))  # Max 5000ms
+        self.timer.setInterval(self.tick_interval)
+        self.update_stats()
+        print(f"Speed decreased - interval: {self.tick_interval}ms")
+    
+    def update_stats(self):
+        """Update the statistics labels"""
+        self.steps_label.setText(f"Steps: {self.step_count}")
+        self.speed_label.setText(f"Speed: {self.tick_interval}ms")
 
 
 class MapCanvas(QWidget):
