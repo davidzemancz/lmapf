@@ -1,12 +1,12 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt, QRect, QTimer
 from PySide6.QtGui import QPainter, QColor, QPen
-from models.simulation import Simulation
+from models.simulation import SimulationBase
 from models.layout import Layout
 
 
 class MapWindow(QMainWindow):
-    def __init__(self, simulation: Simulation, cell_size: int = 40, tick_interval: int = 500):
+    def __init__(self, simulation: SimulationBase, cell_size: int = 40, tick_interval: int = 500):
         super().__init__()
         self.simulation = simulation
         self.tick_interval = tick_interval
@@ -102,7 +102,7 @@ class MapWindow(QMainWindow):
     
     def on_timer_tick(self):
         """Called automatically by timer"""
-        self.simulation.random_step()
+        self.simulation.step()
         self.step_count += 1
         self.update_stats()
         self.canvas.update()  # Trigger repaint
@@ -154,7 +154,7 @@ class MapWindow(QMainWindow):
 
 
 class MapCanvas(QWidget):
-    def __init__(self, simulation: Simulation):
+    def __init__(self, simulation: SimulationBase):
         super().__init__()
         self.simulation = simulation
         

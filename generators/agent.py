@@ -11,7 +11,7 @@ def initialize_positions(agents: List[Agent], layout: Layout) -> None:
         (x, y)
         for y in range(layout.height)
         for x in range(layout.width)
-        if layout.get_value(x, y) == Layout.CELL_EMPTY or layout.get_value(x, y) == Layout.CELL_FLOORBOX or layout.get_value(x, y) == Layout.CELL_OUTPUT
+        if layout.get_value(x, y) == Layout.CELL_EMPTY or layout.get_value(x, y) == Layout.CELL_STORAGE or layout.get_value(x, y) == Layout.CELL_OUTPUT
     ]
     
     random.shuffle(empty_cells)

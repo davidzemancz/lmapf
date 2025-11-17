@@ -3,13 +3,27 @@ from models.agent import Agent
 from models.layout import Layout
 import random
 
-
-class Simulation:
+class SimulationBase:
     def __init__(self, layout: Layout, agents: list[Agent]):
         self.layout = layout
         self.agents = agents
 
-    def random_step(self):
+    def step(self):
+        """Perform a simulation step. To be implemented by subclasses."""
+        raise NotImplementedError("Subclasses should implement this method.")
+    
+    def __repr__(self):
+        return f"Simulation(layout={self.layout}, agents={self.agents})"
+    
+    def __str__(self) -> str:
+        return f"Simulation with {len(self.agents)} agents on layout of size {self.layout.width}x{self.layout.height}"
+
+class RandomSimulation(SimulationBase):
+    def __init__(self, layout: Layout, agents: list[Agent]):
+        self.layout = layout
+        self.agents = agents
+
+    def step(self):
         """Perform a random step for each agent in the simulation"""
         for agent in self.agents:
             moved = False
@@ -32,8 +46,4 @@ class Simulation:
             return True
         return False
 
-    def __repr__(self):
-        return f"Simulation(layout={self.layout}, agents={self.agents})"
-    
-    def __str__(self) -> str:
-        return f"Simulation with {len(self.agents)} agents on layout of size {self.layout.width}x{self.layout.height}"
+   
