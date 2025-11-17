@@ -24,12 +24,12 @@ class SimulationBase:
 class SimpleSimulation(SimulationBase):
     
     def step(self):
-        # Generate new task if no pending tasks are available
-        pending_tasks = [t for t in self.tasks if t.status == Task.STATUS_PENDING]
-        if len(pending_tasks) == 0:
-            self.tasks.append(random_next(self.layout))
-
         for agent in self.agents:
+            # Generate new task if no pending tasks are available
+            pending_tasks = [t for t in self.tasks if t.status == Task.STATUS_PENDING]
+            if len(pending_tasks) == 0:
+                self.tasks.append(random_next(self.layout))
+
              # Assign tasks to agent if doesn't have one
             if agent.task is None:
                 # Find first pending task
@@ -67,29 +67,3 @@ class SimpleSimulation(SimulationBase):
                         agent.task = None  # Clear task after completion
 
 
-class RandomSimulation(SimulationBase):
-
-    def step(self):
-        """Perform a random step for each agent in the simulation"""
-        for agent in self.agents:
-            moved = False
-            while not moved:
-                direction = random.choice(['up', 'down', 'left', 'right'])
-                if direction == 'up':
-                    moved = self.try_move(agent, agent.x, agent.y - 1)
-                elif direction == 'down':
-                    moved = self.try_move(agent, agent.x, agent.y + 1)
-                elif direction == 'left':
-                    moved = self.try_move(agent, agent.x - 1, agent.y)
-                elif direction == 'right':
-                    moved = self.try_move(agent, agent.x + 1, agent.y)
-
-    def try_move(self, agent: Agent, new_x: int, new_y: int) -> bool:
-        """Attempt to move an agent to a new position if within bounds"""
-        if self.layout.is_traversable(new_x, new_y) and not any(other_agent.x == new_x and other_agent.y == new_y for other_agent in self.agents if other_agent != agent):
-            agent.x = new_x
-            agent.y = new_y
-            return True
-        return False
-
-   
