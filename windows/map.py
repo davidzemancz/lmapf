@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt, QRect, QTimer
-from PySide6.QtGui import QPainter, QColor, QPen
+from PySide6.QtGui import QPainter, QColor, QPen, QFont
 from models.simulation import SimulationBase
 from models.layout import Layout
 
@@ -76,9 +76,11 @@ class MapWindow(QMainWindow):
         
         self.steps_label = QLabel(f"Steps: {self.step_count}")
         self.speed_label = QLabel(f"Speed: {self.tick_interval}ms")
+        self.tasks_label = QLabel(f"Tasks: {len(simulation.tasks)}")
         
         button_layout.addWidget(self.steps_label)
         button_layout.addWidget(self.speed_label)
+        button_layout.addWidget(self.tasks_label)
         
         # Add left panel to main layout
         main_layout.addWidget(left_panel)
@@ -151,6 +153,7 @@ class MapWindow(QMainWindow):
         """Update the statistics labels"""
         self.steps_label.setText(f"Steps: {self.step_count}")
         self.speed_label.setText(f"Speed: {self.tick_interval}ms")
+        self.tasks_label.setText(f"Tasks: {len(self.simulation.tasks)}")
 
 
 class MapCanvas(QWidget):
@@ -165,8 +168,9 @@ class MapCanvas(QWidget):
             Layout.CELL_OUTPUT: QColor(255, 150, 100)       # Orange
         }
         
-        # Color for agents
+        # Colors
         self.agent_color = QColor(255, 0, 0)  # Red
+        self.task_color = QColor(0, 200, 0)   # Green
     
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -210,6 +214,36 @@ class MapCanvas(QWidget):
                 painter.setPen(QPen(QColor(0, 0, 0), 1))
                 painter.drawRect(rect)
         
+        # Draw tasks (only pending or assigned)
+        from models.task import Task
+        for task in self.simulation.tasks:
+            # Only draw pending or assigned tasks
+            if task.status not in [Task.STATUS_PENDING, Task.STATUS_ASSIGNED]:
+                continue
+                
+            task_rect = QRect(
+                int(task.x * cell_size + offset_x),
+                int(task.y * cell_size + offset_y),
+                int(cell_size),
+                int(cell_size)
+            )
+            painter.fillRect(task_rect, self.task_color)
+            
+            # Draw agent ID on task if assigned
+            assigned_agent = None
+            for agent in self.simulation.agents:
+                if agent.task == task:
+                    assigned_agent = agent
+                    break
+            
+            if assigned_agent:
+                painter.setPen(QPen(QColor(255, 255, 255), 2))
+                font = QFont()
+                font.setPointSize(max(10, int(cell_size / 2.5)))
+                font.setBold(True)
+                painter.setFont(font)
+                painter.drawText(task_rect, Qt.AlignmentFlag.AlignCenter, str(assigned_agent.id))
+        
         # Draw agents
         for agent in self.simulation.agents:
             agent_rect = QRect(
@@ -219,3 +253,11 @@ class MapCanvas(QWidget):
                 int(cell_size)
             )
             painter.fillRect(agent_rect, self.agent_color)
+            
+            # Draw agent ID
+            painter.setPen(QPen(QColor(255, 255, 255), 2))
+            font = QFont()
+            font.setPointSize(max(10, int(cell_size / 2.5)))
+            font.setBold(True)
+            painter.setFont(font)
+            painter.drawText(agent_rect, Qt.AlignmentFlag.AlignCenter, str(agent.id))

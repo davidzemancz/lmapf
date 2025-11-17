@@ -9,11 +9,8 @@ def storage_floor(width: int, height: int) -> Layout:
         for x in range(1, width - 1):
             layout.set_value(x, y, Layout.CELL_STORAGE)
 
-    # Output cells on the borders
-    for x in range(width):
-        if x % 2 == 0: 
-            layout.set_value(x, 0, Layout.CELL_OUTPUT)
-            layout.set_value(x, height - 1, Layout.CELL_OUTPUT)
+    # Output at (0, 0)
+    layout.set_value(0, 0, Layout.CELL_OUTPUT)
 
     layout.compute_storage_cells()
 

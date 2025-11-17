@@ -2,24 +2,29 @@ import sys
 from PySide6.QtWidgets import QApplication
 from models.layout import Layout
 from models.agent import Agent
-from models.simulation import RandomSimulation
+from models.task import Task
+from models.simulation import RandomSimulation, SimpleSimulation
 from windows.map import MapWindow
 from generators.layout import storage_floor, storage_walls
 from generators.agent import initialize_positions
+from generators.task import random_next
 
 
 def main():
     # Create a sample layout
-    layout = storage_walls(31, 30)
+    layout = storage_floor(31, 30)
     
     # Create 5 agents
-    agents = [Agent(id=i, x=0, y=0) for i in range(50)]
+    agents = [Agent(id=i, x=0, y=0) for i in range(5)]
 
     # Initialize agent positions
     initialize_positions(agents, layout)
     
+    # Create some initial tasks
+    tasks = [random_next(layout) for _ in range(0)]
+    
     # Create simulation
-    simulation = RandomSimulation(layout, agents)
+    simulation = SimpleSimulation(layout, agents, tasks)
     
     # Create Qt application
     app = QApplication(sys.argv)
