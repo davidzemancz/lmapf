@@ -12,16 +12,18 @@ class Simulation:
     def random_step(self):
         """Perform a random step for each agent in the simulation"""
         for agent in self.agents:
-            direction = random.choice(['up', 'down', 'left', 'right'])
-            if direction == 'up':
-                self.try_move(agent, agent.x, agent.y - 1)
-            elif direction == 'down':
-                self.try_move(agent, agent.x, agent.y + 1)
-            elif direction == 'left':
-                self.try_move(agent, agent.x - 1, agent.y)
-            elif direction == 'right':
-                self.try_move(agent, agent.x + 1, agent.y)
-
+            moved = False
+            while not moved:
+                direction = random.choice(['up', 'down', 'left', 'right'])
+                if direction == 'up':
+                    moved = self.try_move(agent, agent.x, agent.y - 1)
+                elif direction == 'down':
+                    moved = self.try_move(agent, agent.x, agent.y + 1)
+                elif direction == 'left':
+                    moved = self.try_move(agent, agent.x - 1, agent.y)
+                elif direction == 'right':
+                    moved = self.try_move(agent, agent.x + 1, agent.y)
+                    
     def try_move(self, agent: Agent, new_x: int, new_y: int) -> bool:
         """Attempt to move an agent to a new position if within bounds"""
         if 0 <= new_x < self.layout.width and 0 <= new_y < self.layout.height:
