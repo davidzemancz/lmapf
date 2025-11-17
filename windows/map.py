@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget
+from PySide6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QPainter, QColor, QPen
 from models.layout import Layout
@@ -11,14 +11,53 @@ class MapWindow(QMainWindow):
         
         self.setWindowTitle("Map Layout")
         
-        # Create central widget for drawing
+        # Create central widget with layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        
+        main_layout = QVBoxLayout(central_widget)
+        
+        # Create canvas for drawing
         self.canvas = MapCanvas(map_layout)
-        self.setCentralWidget(self.canvas)
+        main_layout.addWidget(self.canvas)
+        
+        # Create button layout
+        button_layout = QHBoxLayout()
+        
+        # Create buttons
+        self.start_button = QPushButton("Start")
+        self.stop_button = QPushButton("Stop")
+        self.reset_button = QPushButton("Reset")
+        
+        # Add buttons to layout
+        button_layout.addWidget(self.start_button)
+        button_layout.addWidget(self.stop_button)
+        button_layout.addWidget(self.reset_button)
+        
+        # Add button layout to main layout
+        main_layout.addLayout(button_layout)
+        
+        # Connect button signals
+        self.start_button.clicked.connect(self.on_start)
+        self.stop_button.clicked.connect(self.on_stop)
+        self.reset_button.clicked.connect(self.on_reset)
         
         # Set initial window size based on grid dimensions
         window_width = map_layout.width * cell_size + 20
-        window_height = map_layout.height * cell_size + 20
+        window_height = map_layout.height * cell_size + 80  # Extra space for buttons
         self.resize(window_width, window_height)
+    
+    def on_start(self):
+        """Handle start button click"""
+        print("Start button clicked")
+    
+    def on_stop(self):
+        """Handle stop button click"""
+        print("Stop button clicked")
+    
+    def on_reset(self):
+        """Handle reset button click"""
+        print("Reset button clicked")
 
 
 class MapCanvas(QWidget):
