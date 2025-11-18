@@ -121,7 +121,7 @@ class MapWindow(QMainWindow):
     
     def on_step(self):
         """Handle step button click - perform one step"""
-        self.simulation.random_step()
+        self.simulation.step()
         self.step_count += 1
         self.update_stats()
         self.canvas.update()  # Trigger repaint
