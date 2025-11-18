@@ -14,7 +14,7 @@ class Task:
         self.status = status
 
     def __repr__(self):
-        return f"Task(x={self.x}, y={self.y})"
+        return f"Task(x={self.x}, y={self.y}, status={self.status!r})"
     
     def __str__(self) -> str:
-        return f"Task at position ({self.x}, {self.y})"
+        return f"Task at position ({self.x}, {self.y}) [status: {self.status}]"

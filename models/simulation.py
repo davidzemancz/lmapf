@@ -16,10 +16,10 @@ class SimulationBase:
         raise NotImplementedError("Subclasses should implement this method.")
     
     def __repr__(self):
-        return f"Simulation(layout={self.layout}, agents={self.agents})"
+        return f"SimulationBase(layout={self.layout!r}, agents={self.agents!r}, tasks={self.tasks!r})"
     
     def __str__(self) -> str:
-        return f"Simulation with {len(self.agents)} agents on layout of size {self.layout.width}x{self.layout.height}"
+        return f"Simulation with {len(self.agents)} agents, {len(self.tasks)} tasks on layout of size {self.layout.width}x{self.layout.height}"
 
 class SimpleSimulation(SimulationBase):
     

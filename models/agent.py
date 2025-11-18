@@ -9,7 +9,8 @@ class Agent:
         self.task : Task | None = None
 
     def __repr__(self):
-        return f"Agent(id={self.id}, x={self.x}, y={self.y})"
+        return f"Agent(id={self.id}, x={self.x}, y={self.y}, task={self.task!r})"
     
     def __str__(self) -> str:
-        return f"Agent {self.id} at position ({self.x}, {self.y})"
+        task_str = f" with task {self.task}" if self.task else " (no task)"
+        return f"Agent {self.id} at position ({self.x}, {self.y}){task_str}"

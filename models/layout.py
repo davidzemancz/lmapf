@@ -33,7 +33,8 @@ class Layout:
         ]
 
     def __str__(self):
-        return '\n'.join([' '.join(map(str, row)) for row in self.grid])
+        grid_str = '\n'.join([' '.join(map(str, row)) for row in self.grid])
+        return f"Layout(width={self.width}, height={self.height}, storage_cells={len(self.storage_cells)})\n{grid_str}"
     
     def __repr__(self):
-        return f"Map(width={self.width}, height={self.height})"
+        return f"Layout(width={self.width}, height={self.height}, grid={self.grid!r}, storage_cells={self.storage_cells!r})"
