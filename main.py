@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication
 from models.layout import Layout
 from models.agent import Agent
 from models.task import Task
-from models.simulation import SimpleSimulation
+from simulations.simple_simulation import SimpleSimulation
 from windows.map import MapWindow
 from generators.layout import storage_floor, storage_walls, obstacle_walls
 from generators.agent import initialize_positions
