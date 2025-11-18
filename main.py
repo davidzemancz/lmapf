@@ -5,17 +5,17 @@ from models.agent import Agent
 from models.task import Task
 from models.simulation import SimpleSimulation
 from windows.map import MapWindow
-from generators.layout import storage_floor, storage_walls
+from generators.layout import storage_floor, storage_walls, obstacle_walls
 from generators.agent import initialize_positions
 from generators.task import random_next
 
 
 def main():
     # Create a sample layout
-    layout = storage_floor(31, 30)
+    layout = obstacle_walls(31, 30)
     
     # Create 5 agents
-    agents = [Agent(id=i, x=0, y=0) for i in range(100)]
+    agents = [Agent(id=i, x=0, y=0) for i in range(10)]
 
     # Initialize agent positions
     initialize_positions(agents, layout)
