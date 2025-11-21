@@ -1,6 +1,7 @@
 ## 18.11.2025
 - [LaCAM](https://github.com/Kei18/pylacam)
 - [LaCAM0](https://kei18.github.io/lacam2/)
+- [MPAF](https://arxiv.org/pdf/1906.08291)
 - Každý agent má plán: posloupnost akcí
 - Akce: pohyb, čekání, nakládka, vykládka
   - Pohyb nesmí být na obsazené pole

@@ -5,15 +5,15 @@ class Layout:
     CELL_OBSTACLE = 2
     CELL_OUTPUT = 3
 
+    @staticmethod
+    def traversable_cells() -> set[int]:
+        return {Layout.CELL_EMPTY, Layout.CELL_OUTPUT, Layout.CELL_STORAGE}
+
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
         self.grid = [[Layout.CELL_EMPTY for _ in range(width)] for _ in range(height)]
         self.storage_cells = []
-
-    @staticmethod
-    def traversable_cells() -> set[int]:
-        return {Layout.CELL_EMPTY, Layout.CELL_OUTPUT, Layout.CELL_STORAGE}
 
     def set_value(self, x: int, y: int, value: int):
        self.grid[y][x] = value
