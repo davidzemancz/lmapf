@@ -3,6 +3,7 @@
 - [LaCAM0](https://kei18.github.io/lacam2/)
 - [Benchmarks](https://movingai.com/benchmarks/mapf.html)
 - [MPAF](https://arxiv.org/pdf/1906.08291)
+- [CPP PY binding](https://github.com/pybind/pybind11)
 - Každý agent má plán: posloupnost akcí
 - Akce: pohyb, čekání, nakládka, vykládka
   - Pohyb nesmí být na obsazené pole
