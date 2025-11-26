@@ -97,8 +97,6 @@ class ScenarioBuilder:
         
         with open(output_file, 'w') as f:
             f.write(content)
-        
-        print(f"Scenario saved to {output_path} with {len(self.agents)} agents")
     
     def __len__(self):
         """Return the number of agents in the scenario."""
