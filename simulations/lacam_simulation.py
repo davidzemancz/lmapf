@@ -1,9 +1,7 @@
 import numpy as np
 
-import sys
-sys.path.insert(0, 'solvers/pylacam')
-from lacam import LaCAM
-from mapf_utils import Config, Configs, Grid
+from solvers.pylacam.lacam import LaCAM
+from solvers.pylacam.mapf_utils import Config, Configs, Grid
 
 from models.task import Task
 from models.agent import Agent

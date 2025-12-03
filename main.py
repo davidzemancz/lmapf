@@ -1,5 +1,5 @@
-from tests.test_pylacam import test_pylacam
+from demos.demo_pylacam import demo_pylacam
 
 
 if __name__ == "__main__":
-    test_pylacam()
+    demo_pylacam()

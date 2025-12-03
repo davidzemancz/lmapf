@@ -10,7 +10,7 @@ from generators.agent import initialize_positions
 from generators.task import random_next
 
 
-def test_simple():
+def demo_simple():
     # Create a sample layout
     layout = obstacle_walls(31, 30)
 

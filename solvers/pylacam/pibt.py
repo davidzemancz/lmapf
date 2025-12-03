@@ -5,8 +5,8 @@ https://github.com/Kei18/pypibt
 
 import numpy as np
 
-from dist_table import DistTable
-from mapf_utils import Config, Coord, get_neighbors
+from .dist_table import DistTable
+from .mapf_utils import Config, Coord, get_neighbors
 
 
 class PIBT:

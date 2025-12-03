@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from dist_table import DistTable
-from mapf_utils import Config, Configs, Coord, Deadline, Grid, get_neighbors
-from pibt import PIBT
+from .dist_table import DistTable
+from .mapf_utils import Config, Configs, Coord, Deadline, Grid, get_neighbors
+from .pibt import PIBT
 
 
 @dataclass

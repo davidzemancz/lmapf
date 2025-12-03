@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from mapf_utils import Coord, Grid, get_neighbors, is_valid_coord
+from .mapf_utils import Coord, Grid, get_neighbors, is_valid_coord
 
 
 @dataclass

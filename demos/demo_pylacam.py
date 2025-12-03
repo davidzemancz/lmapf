@@ -10,7 +10,7 @@ from generators.agent import initialize_positions
 from generators.task import random_next
 
 
-def test_pylacam():
+def demo_pylacam():
     # Create a sample layout
     layout = storage_floor(10, 10)
 
