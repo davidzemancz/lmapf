@@ -3,13 +3,13 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from .mapf_utils import Coord, Grid, get_neighbors, is_valid_coord
+from .mapf_utils import LacamCoord, LacamGrid, get_neighbors, is_valid_coord
 
 
 @dataclass
 class DistTable:
-    grid: Grid
-    goal: Coord
+    grid: LacamGrid
+    goal: LacamCoord
     Q: deque = field(init=False)
     table: np.ndarray = field(init=False)  # distance matrix
     NIL: int = field(init=False)
@@ -20,7 +20,7 @@ class DistTable:
         self.table = np.full(self.grid.shape, self.NIL, dtype=int)
         self.table[self.goal] = 0
 
-    def get(self, target: Coord) -> int:
+    def get(self, target: LacamCoord) -> int:
         # check valid input
         if not is_valid_coord(self.grid, target):
             return self.grid.size

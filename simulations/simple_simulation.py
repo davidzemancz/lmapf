@@ -18,7 +18,7 @@ class SimpleSimulation(SimulationBase):
                 for task in self.tasks:
                     if task.status == Task.STATUS_PENDING:
                         agent.task = task
-                        agent.task.set_status(Task.STATUS_ASSIGNED)
+                        agent.task.status = Task.STATUS_ASSIGNED
                         break
 
             # Move agent
@@ -33,7 +33,7 @@ class SimpleSimulation(SimulationBase):
                     elif agent.y > agent.task.y:
                         agent.y -= 1
                     if agent.x == agent.task.x and agent.y == agent.task.y:
-                        agent.task.set_status(Task.STATUS_DELIVERING)
+                        agent.task.status = Task.STATUS_DELIVERING
                 elif agent.task.status == Task.STATUS_DELIVERING: # Move towards output (0,0)
                     if agent.x > 0:
                         agent.x -= 1
@@ -44,6 +44,6 @@ class SimpleSimulation(SimulationBase):
                     elif agent.y < 0:
                         agent.y += 1
                     if agent.x == 0 and agent.y == 0:
-                        agent.task.set_status(Task.STATUS_COMPLETED)
+                        agent.task.status = Task.STATUS_COMPLETED
                         self.tasks.remove(agent.task)  # Remove completed task from the list
                         agent.task = None  # Clear task after completion

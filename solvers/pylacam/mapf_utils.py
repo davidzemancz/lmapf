@@ -6,18 +6,18 @@ from typing import TypeAlias
 
 import numpy as np
 
-Grid: TypeAlias = np.ndarray
-Coord: TypeAlias = tuple[int, int]  # y, x
+LacamGrid: TypeAlias = np.ndarray
+LacamCoord: TypeAlias = tuple[int, int]  # y, x
 
 
 @dataclass
-class Config:
-    positions: list[Coord] = field(default_factory=lambda: [])
+class LacamConfig:
+    positions: list[LacamCoord] = field(default_factory=lambda: [])
 
-    def __getitem__(self, k: int) -> Coord:
+    def __getitem__(self, k: int) -> LacamCoord:
         return self.positions[k]
 
-    def __setitem__(self, k: int, coord: Coord) -> None:
+    def __setitem__(self, k: int, coord: LacamCoord) -> None:
         self.positions[k] = coord
 
     def __len__(self) -> int:
@@ -26,15 +26,15 @@ class Config:
     def __hash__(self) -> int:
         return hash(tuple(self.positions))
 
-    def append(self, coord: Coord) -> None:
+    def append(self, coord: LacamCoord) -> None:
         self.positions.append(coord)
 
 
-Configs: TypeAlias = list[Config]
+LacamConfigs: TypeAlias = list[LacamConfig]
 
 
 @dataclass
-class Deadline:
+class LacamDeadline:
     time_limit_ms: int
 
     def __post_init__(self) -> None:
@@ -49,7 +49,7 @@ class Deadline:
         return self.elapsed > self.time_limit_ms
 
 
-def get_grid(map_file: str | Path) -> Grid:
+def get_grid(map_file: str | Path) -> LacamGrid:
     width, height = 0, 0
     with open(map_file, "r") as f:
         # retrieve map size
@@ -83,9 +83,9 @@ def get_grid(map_file: str | Path) -> Grid:
     return grid
 
 
-def get_scenario(scen_file: str | Path, N: int | None = None) -> tuple[Config, Config]:
+def get_scenario(scen_file: str | Path, N: int | None = None) -> tuple[LacamConfig, LacamConfig]:
     with open(scen_file, "r") as f:
-        starts, goals = Config(), Config()
+        starts, goals = LacamConfig(), LacamConfig()
         for row in f:
             res = re.match(
                 r"\d+\t.+\.map\t\d+\t\d+\t(\d+)\t(\d+)\t(\d+)\t(\d+)\t.+", row
@@ -102,16 +102,16 @@ def get_scenario(scen_file: str | Path, N: int | None = None) -> tuple[Config, C
     return starts, goals
 
 
-def is_valid_coord(grid: Grid, coord: Coord) -> bool:
+def is_valid_coord(grid: LacamGrid, coord: LacamCoord) -> bool:
     y, x = coord
     if y < 0 or y >= grid.shape[0] or x < 0 or x >= grid.shape[1] or not grid[coord]:
         return False
     return True
 
 
-def get_neighbors(grid: Grid, coord: Coord) -> list[Coord]:
+def get_neighbors(grid: LacamGrid, coord: LacamCoord) -> list[LacamCoord]:
     # coord: y, x
-    neigh: list[Coord] = []
+    neigh: list[LacamCoord] = []
 
     # check valid input
     if not is_valid_coord(grid, coord):
@@ -134,7 +134,7 @@ def get_neighbors(grid: Grid, coord: Coord) -> list[Coord]:
     return neigh
 
 
-def save_configs_for_visualizer(configs: Configs, filename: str | Path) -> None:
+def save_configs_for_visualizer(configs: LacamConfigs, filename: str | Path) -> None:
     output_dirname = Path(filename).parent
     if not output_dirname.exists():
         output_dirname.mkdir(parents=True, exist_ok=True)
@@ -145,10 +145,10 @@ def save_configs_for_visualizer(configs: Configs, filename: str | Path) -> None:
 
 
 def validate_mapf_solution(
-    grid: Grid,
-    starts: Config,
-    goals: Config,
-    solution: Configs,
+    grid: LacamGrid,
+    starts: LacamConfig,
+    goals: LacamConfig,
+    solution: LacamConfigs,
 ) -> None:
     assert len(solution) > 0, "invalid solution, empty"
 
@@ -186,10 +186,10 @@ def validate_mapf_solution(
 
 
 def is_valid_mapf_solution(
-    grid: Grid,
-    starts: Config,
-    goals: Config,
-    solution: Configs,
+    grid: LacamGrid,
+    starts: LacamConfig,
+    goals: LacamConfig,
+    solution: LacamConfigs,
 ) -> bool:
     try:
         validate_mapf_solution(grid, starts, goals, solution)
@@ -199,7 +199,7 @@ def is_valid_mapf_solution(
         return False
 
 
-def get_sum_of_loss(configs: Configs) -> int:
+def get_sum_of_loss(configs: LacamConfigs) -> int:
     cost = 0
     for t in range(1, len(configs)):
         cost += sum(

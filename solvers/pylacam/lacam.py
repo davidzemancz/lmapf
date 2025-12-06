@@ -6,17 +6,17 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .dist_table import DistTable
-from .mapf_utils import Config, Configs, Coord, Deadline, Grid, get_neighbors
+from .mapf_utils import LacamConfig, LacamConfigs, LacamCoord, LacamDeadline, LacamGrid, get_neighbors
 from .pibt import PIBT
 
 
 @dataclass
 class LowLevelNode:
     who: list[int] = field(default_factory=lambda: [])
-    where: list[Coord] = field(default_factory=lambda: [])
+    where: list[LacamCoord] = field(default_factory=lambda: [])
     depth: int = 0
 
-    def get_child(self, who: int, where: Coord) -> LowLevelNode:
+    def get_child(self, who: int, where: LacamCoord) -> LowLevelNode:
         return LowLevelNode(
             who=self.who + [who],
             where=self.where + [where],
@@ -26,7 +26,7 @@ class LowLevelNode:
 
 @dataclass
 class HighLevelNode:
-    Q: Config
+    Q: LacamConfig
     order: list[int]
     parent: HighLevelNode | None = None
     tree: deque[LowLevelNode] = field(default_factory=lambda: deque([LowLevelNode()]))
@@ -50,22 +50,22 @@ class LaCAM:
 
     def solve(
         self,
-        grid: Grid,
-        starts: Config,
-        goals: Config,
+        grid: LacamGrid,
+        starts: LacamConfig,
+        goals: LacamConfig,
         time_limit_ms: int = 3000,
-        deadline: Deadline | None = None,
+        deadline: LacamDeadline | None = None,
         flg_star: bool = True,
         seed: int = 0,
         verbose: int = 1,
-    ) -> Configs:
+    ) -> LacamConfigs:
         # set problem
         self.num_agents: int = len(starts)
-        self.grid: Grid = grid
-        self.starts: Config = starts
-        self.goals: Config = goals
-        self.deadline: Deadline = (
-            deadline if deadline is not None else Deadline(time_limit_ms)
+        self.grid: LacamGrid = grid
+        self.starts: LacamConfig = starts
+        self.goals: LacamConfig = goals
+        self.deadline: LacamDeadline = (
+            deadline if deadline is not None else LacamDeadline(time_limit_ms)
         )
         # set hyper parameters
         self.flg_star: bool = flg_star
@@ -73,7 +73,7 @@ class LaCAM:
         self.verbose = verbose
         return self._solve()
 
-    def _solve(self) -> Configs:
+    def _solve(self) -> LacamConfigs:
         self.info(1, "start solving MAPF")
 
         # set distance tables
@@ -84,7 +84,7 @@ class LaCAM:
 
         # set search scheme
         OPEN: deque[HighLevelNode] = deque([])
-        EXPLORED: dict[Config, HighLevelNode] = {}
+        EXPLORED: dict[LacamConfig, HighLevelNode] = {}
         N_goal: HighLevelNode | None = None
 
         # set initial node
@@ -177,8 +177,8 @@ class LaCAM:
         return self.backtrack(N_goal)
 
     @staticmethod
-    def backtrack(_N: HighLevelNode | None) -> Configs:
-        configs: Configs = []
+    def backtrack(_N: HighLevelNode | None) -> LacamConfigs:
+        configs: LacamConfigs = []
         N = _N
         while N is not None:
             configs.append(N.Q)
@@ -186,7 +186,7 @@ class LaCAM:
         configs.reverse()
         return configs
 
-    def get_edge_cost(self, Q_from: Config, Q_to: Config) -> int:
+    def get_edge_cost(self, Q_from: LacamConfig, Q_to: LacamConfig) -> int:
         # e.g., \sum_i | not (Q_from[i] == Q_to[k] == g_i) |
         cost = 0
         for i in range(self.num_agents):
@@ -194,7 +194,7 @@ class LaCAM:
                 cost += 1
         return cost
 
-    def get_h_value(self, Q: Config) -> int:
+    def get_h_value(self, Q: LacamConfig) -> int:
         # e.g., \sum_i dist(Q[i], g_i)
         cost = 0
         for agent_idx, loc in enumerate(Q):
@@ -204,7 +204,7 @@ class LaCAM:
             cost += c
         return cost
 
-    def get_order(self, Q: Config) -> list[int]:
+    def get_order(self, Q: LacamConfig) -> list[int]:
         # e.g., by descending order of dist(Q[i], g_i)
         # Note that this is not an effective PIBT prioritization scheme
         order = list(range(self.num_agents))
@@ -214,9 +214,9 @@ class LaCAM:
 
     def configuration_generaotr(
         self, N: HighLevelNode, C: LowLevelNode
-    ) -> Config | None:
+    ) -> LacamConfig | None:
         # setup next configuration
-        Q_to = Config([self.pibt.NIL_COORD for _ in range(self.num_agents)])
+        Q_to = LacamConfig([self.pibt.NIL_COORD for _ in range(self.num_agents)])
         for k in range(C.depth):
             Q_to[C.who[k]] = C.where[k]
 

@@ -1,24 +1,25 @@
 import numpy as np
 
 from solvers.pylacam.lacam import LaCAM
-from solvers.pylacam.mapf_utils import Config, Configs, Grid
+from solvers.pylacam.mapf_utils import LacamConfig, LacamGrid
 
 from models.task import Task
 from models.agent import Agent
 from models.layout import Layout
 from models.simulation import SimulationBase
+from models.config import Config
 
 
-class PylacamSimulation(SimulationBase):
+class PylacamMAPFSimulation(SimulationBase):
     """Simulation that uses the pylacam solver to compute paths for all agents."""
 
     def __init__(self, layout: Layout, agents: list[Agent], tasks: list[Task]):
         super().__init__(layout, agents, tasks)
-        self.solution: Configs = []
+        self.solution: list[Config] = []
         self.current_step = 0
         self.solved = False
 
-    def _layout_to_grid(self) -> Grid:
+    def _layout_to_grid(self) -> LacamGrid:
         """Convert Layout to numpy grid for pylacam solver.
 
         Grid format: grid[y, x] -> True: available, False: obstacle
@@ -30,16 +31,16 @@ class PylacamSimulation(SimulationBase):
                 grid[y, x] = self.layout.grid[y][x] in traversable
         return grid
 
-    def _get_starts_config(self) -> Config:
+    def _get_starts_config(self) -> LacamConfig:
         """Get starting positions of all agents as Config."""
-        config = Config()
+        config = LacamConfig()
         for agent in self.agents:
             config.append((agent.y, agent.x))  # pylacam uses (y, x) format
         return config
 
-    def _get_goals_config(self) -> Config:
+    def _get_goals_config(self) -> LacamConfig:
         """Get goal positions (task locations) for all agents as Config."""
-        config = Config()
+        config = LacamConfig()
         for agent in self.agents:
             if agent.task is not None:
                 config.append((agent.task.y, agent.task.x))  # pylacam uses (y, x) format
@@ -63,13 +64,21 @@ class PylacamSimulation(SimulationBase):
         goals = self._get_goals_config()
 
         solver = LaCAM()
-        self.solution = solver.solve(
+        lacam_solution = solver.solve(
             grid=grid,
             starts=starts,
             goals=goals,
             time_limit_ms=time_limit_ms,
             verbose=verbose
         )
+
+        # Convert LacamConfig (y, x) to Config (x, y)
+        self.solution = []
+        for lacam_config in lacam_solution:
+            config = Config()
+            for y, x in lacam_config.positions:
+                config.append((x, y))
+            self.solution.append(config)
 
         self.solved = len(self.solution) > 0
         self.current_step = 0
@@ -85,24 +94,10 @@ class PylacamSimulation(SimulationBase):
             return None
 
         config = self.solution[self.current_step]
-        positions = [(x, y) for (y, x) in config.positions]  # Convert from (y,x) to (x,y)
 
         # Update agent positions
         for i, agent in enumerate(self.agents):
-            agent.x, agent.y = positions[i]
+            agent.x, agent.y = config[i]
 
         self.current_step += 1
-        return positions
-
-    def has_more_steps(self) -> bool:
-        """Check if there are more steps in the solution."""
-        return self.solved and self.current_step < len(self.solution)
-
-    def reset(self):
-        """Reset simulation to beginning of solution."""
-        self.current_step = 0
-
-    def __str__(self) -> str:
-        status = "solved" if self.solved else "unsolved"
-        steps = len(self.solution) if self.solved else 0
-        return f"PylacamSimulation({status}, {steps} steps, step {self.current_step}/{steps})"
+        return config.positions

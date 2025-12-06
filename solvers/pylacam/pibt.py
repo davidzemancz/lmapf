@@ -6,7 +6,7 @@ https://github.com/Kei18/pypibt
 import numpy as np
 
 from .dist_table import DistTable
-from .mapf_utils import Config, Coord, get_neighbors
+from .mapf_utils import LacamConfig, LacamCoord, get_neighbors
 
 
 class PIBT:
@@ -18,14 +18,14 @@ class PIBT:
 
         # cache
         self.NIL = self.N  # meaning \bot
-        self.NIL_COORD: Coord = self.grid.shape  # meaning \bot
+        self.NIL_COORD: LacamCoord = self.grid.shape  # meaning \bot
         self.occupied_now = np.full(self.grid.shape, self.NIL, dtype=int)
         self.occupied_nxt = np.full(self.grid.shape, self.NIL, dtype=int)
 
         # used for tie-breaking
         self.rng = np.random.default_rng(seed)
 
-    def funcPIBT(self, Q_from: Config, Q_to: Config, i: int) -> bool:
+    def funcPIBT(self, Q_from: LacamConfig, Q_to: LacamConfig, i: int) -> bool:
         # true -> valid, false -> invalid
 
         # get candidate next vertices
@@ -66,8 +66,8 @@ class PIBT:
 
     def step(
         self,
-        Q_from: Config,
-        Q_to: Config,
+        Q_from: LacamConfig,
+        Q_to: LacamConfig,
         order: list[int],
     ) -> bool:
         flg_success = True
