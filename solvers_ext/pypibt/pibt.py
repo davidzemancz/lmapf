@@ -1,8 +1,8 @@
 """Priority Inheritance with Backtracking (PIBT) algorithm for MAPF."""
 import numpy as np
 
-from dist_table import DistTable
-from mapf_utils import Config, Configs, Coord, Grid, get_neighbors
+from dist_table import PibtDistTable
+from mapf_utils import PibtConfig, PibtConfigs, PibtCoord, PibtGrid, get_neighbors
 
 
 class PIBT:
@@ -54,7 +54,7 @@ class PIBT:
         multi-agent pathfinding. See https://kei18.github.io/lacam-project/
     """
 
-    def __init__(self, grid: Grid, starts: Config, goals: Config, seed: int = 0) -> None:
+    def __init__(self, grid: PibtGrid, starts: PibtConfig, goals: PibtConfig, seed: int = 0) -> None:
         """Initialize PIBT solver.
 
         Args:
@@ -69,18 +69,18 @@ class PIBT:
         self.N = len(self.starts)
 
         # distance table
-        self.dist_tables = [DistTable(grid, goal) for goal in goals]
+        self.dist_tables = [PibtDistTable(grid, goal) for goal in goals]
 
         # cache
         self.NIL = self.N  # meaning \bot
-        self.NIL_COORD: Coord = self.grid.shape  # meaning \bot
+        self.NIL_COORD: PibtCoord = self.grid.shape  # meaning \bot
         self.occupied_now = np.full(grid.shape, self.NIL, dtype=int)
         self.occupied_nxt = np.full(grid.shape, self.NIL, dtype=int)
 
         # used for tie-breaking
         self.rng = np.random.default_rng(seed)
 
-    def funcPIBT(self, Q_from: Config, Q_to: Config, i: int) -> bool:
+    def funcPIBT(self, Q_from: PibtConfig, Q_to: PibtConfig, i: int) -> bool:
         """Core PIBT function for single agent planning with priority inheritance.
 
         Attempts to assign a collision-free next position for agent i. If
@@ -134,7 +134,7 @@ class PIBT:
         self.occupied_nxt[Q_from[i]] = i
         return False
 
-    def step(self, Q_from: Config, priorities: list[float]) -> Config:
+    def step(self, Q_from: PibtConfig, priorities: list[float]) -> PibtConfig:
         """Compute next configuration for all agents.
 
         Executes one timestep of PIBT by calling funcPIBT for all agents
@@ -149,7 +149,7 @@ class PIBT:
         """
         # setup
         N = len(Q_from)
-        Q_to: Config = []
+        Q_to: PibtConfig = []
         for i, v in enumerate(Q_from):
             Q_to.append(self.NIL_COORD)
             self.occupied_now[v] = i
@@ -167,7 +167,7 @@ class PIBT:
 
         return Q_to
 
-    def run(self, max_timestep: int = 1000) -> Configs:
+    def run(self, max_timestep: int = 1000) -> PibtConfigs:
         """Run PIBT algorithm until all agents reach goals or timeout.
 
         Iteratively computes collision-free paths for all agents using PIBT.

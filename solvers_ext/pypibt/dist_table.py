@@ -3,11 +3,11 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from mapf_utils import Coord, Grid, get_neighbors, is_valid_coord
+from mapf_utils import PibtCoord, PibtGrid, get_neighbors, is_valid_coord
 
 
 @dataclass
-class DistTable:
+class PibtDistTable:
     """Distance table for computing shortest path distances using BFS.
 
     This class lazily evaluates distances from a goal position to any target
@@ -20,9 +20,9 @@ class DistTable:
         Q: Queue for BFS traversal (lazy distance evaluation).
         table: Distance matrix storing computed distances.
     """
-    grid: Grid
-    goal: Coord
-    Q: deque[Coord] = field(init=False)  # lazy distance evaluation
+    grid: PibtGrid
+    goal: PibtCoord
+    Q: deque[PibtCoord] = field(init=False)  # lazy distance evaluation
     table: np.ndarray = field(init=False)  # distance matrix
 
     def __post_init__(self) -> None:
@@ -31,7 +31,7 @@ class DistTable:
         self.table = np.full(self.grid.shape, self.grid.size, dtype=int)
         self.table[self.goal] = 0
 
-    def get(self, target: Coord) -> int:
+    def get(self, target: PibtCoord) -> int:
         """Get shortest path distance from goal to target.
 
         Uses lazy BFS evaluation to compute distance on demand. Previously

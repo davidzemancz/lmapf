@@ -10,13 +10,13 @@ from typing import TypeAlias
 import numpy as np
 
 # y, x
-Grid: TypeAlias = np.ndarray
-Coord: TypeAlias = tuple[int, int]
-Config: TypeAlias = list[Coord]
-Configs: TypeAlias = list[Config]
+PibtGrid: TypeAlias = np.ndarray
+PibtCoord: TypeAlias = tuple[int, int]
+PibtConfig: TypeAlias = list[PibtCoord]
+PibtConfigs: TypeAlias = list[PibtConfig]
 
 
-def get_grid(map_file: str) -> Grid:
+def get_grid(map_file: str) -> PibtGrid:
     """Load grid map from a MAPF benchmark file.
 
     Parses a .map file from the MAPF benchmarks (movingai.com format) and
@@ -65,7 +65,7 @@ def get_grid(map_file: str) -> Grid:
     return grid
 
 
-def get_scenario(scen_file: str, N: int | None = None) -> tuple[Config, Config]:
+def get_scenario(scen_file: str, N: int | None = None) -> tuple[PibtConfig, PibtConfig]:
     """Load start and goal configurations from a MAPF scenario file.
 
     Parses a .scen file from the MAPF benchmarks (movingai.com format) and
@@ -96,7 +96,7 @@ def get_scenario(scen_file: str, N: int | None = None) -> tuple[Config, Config]:
     return starts, goals
 
 
-def is_valid_coord(grid: Grid, coord: Coord) -> bool:
+def is_valid_coord(grid: PibtGrid, coord: PibtCoord) -> bool:
     """Check if a coordinate is valid and free on the grid.
 
     Args:
@@ -112,7 +112,7 @@ def is_valid_coord(grid: Grid, coord: Coord) -> bool:
     return True
 
 
-def get_neighbors(grid: Grid, coord: Coord) -> list[Coord]:
+def get_neighbors(grid: PibtGrid, coord: PibtCoord) -> list[PibtCoord]:
     """Get valid neighboring coordinates (4-connected grid).
 
     Args:
@@ -124,7 +124,7 @@ def get_neighbors(grid: Grid, coord: Coord) -> list[Coord]:
         up, down). Empty list if coord is invalid.
     """
     # coord: y, x
-    neigh: list[Coord] = []
+    neigh: list[PibtCoord] = []
 
     # check valid input
     if not is_valid_coord(grid, coord):
@@ -147,7 +147,7 @@ def get_neighbors(grid: Grid, coord: Coord) -> list[Coord]:
     return neigh
 
 
-def save_configs_for_visualizer(configs: Configs, filename: str) -> None:
+def save_configs_for_visualizer(configs: PibtConfigs, filename: str) -> None:
     """Save solution configurations for visualization.
 
     Exports the solution in a format compatible with mapf-visualizer tool.
@@ -171,10 +171,10 @@ def save_configs_for_visualizer(configs: Configs, filename: str) -> None:
 
 
 def validate_mapf_solution(
-    grid: Grid,
-    starts: Config,
-    goals: Config,
-    solution: Configs,
+    grid: PibtGrid,
+    starts: PibtConfig,
+    goals: PibtConfig,
+    solution: PibtConfigs,
 ) -> None:
     """Validate a MAPF solution for correctness.
 
@@ -228,10 +228,10 @@ def validate_mapf_solution(
 
 
 def is_valid_mapf_solution(
-    grid: Grid,
-    starts: Config,
-    goals: Config,
-    solution: Configs,
+    grid: PibtGrid,
+    starts: PibtConfig,
+    goals: PibtConfig,
+    solution: PibtConfigs,
 ) -> bool:
     """Check if a MAPF solution is valid.
 
