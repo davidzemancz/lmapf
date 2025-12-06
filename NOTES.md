@@ -3,10 +3,8 @@
   - Kontinuálně přibývají úkoly (tasky) pro agenty, když dokončí sůvj aktuální
   - Úkol: cesta ke zboží a k výdejnímu místu
 - Optimalizujeme: throughput = počet dosažených cílů za jednotku času
-- Algoritmus [Algorithm 3 PIBT for MAPD](https://www.sciencedirect.com/science/article/pii/S0004370222000923?via%3Dihub))
-  1. Přijmi nové úkoly a přidej do prioritní fronty
-  2. Přiřaď nové úkoly volným agentům
-  3. Rychle naplánuj cesty agentů s novým úkolem, volitelně uprav cesty stávajících agentů (od n kroků dále)
+- Algoritmus [Algorithm 3 PIBT for MAPD](https://www.sciencedirect.com/science/article/pii/S0004370222000923?via%3Dihub)
+  - [Implementace](https://github.com/Kei18/pibt2)
 
 ## 6.12.2025 MAPF řešení
 - Umím spustit LaCam (zatím jen python implementaci) a vyřešit pomocí něj statickou MAPF úlohu
