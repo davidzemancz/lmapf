@@ -1,7 +1,7 @@
 import numpy as np
 
-from solvers.pylacam.lacam import LaCAM
-from solvers.pylacam.mapf_utils import LacamConfig, LacamGrid
+from solvers_ext.pylacam.lacam import LaCAM
+from solvers_ext.pylacam.mapf_utils import LacamConfig, LacamGrid
 
 from models.task import Task
 from models.agent import Agent
