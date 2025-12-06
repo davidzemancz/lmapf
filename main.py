@@ -1,5 +1,5 @@
-from demos.demo_pylacam import demo_pylacam
+from demos.pibt_mapd_demo import pibt_mapd_demo
 
 
 if __name__ == "__main__":
-    demo_pylacam()
+    pibt_mapd_demo()

@@ -1,8 +1,8 @@
 """Priority Inheritance with Backtracking (PIBT) algorithm for MAPF."""
 import numpy as np
 
-from dist_table import PibtDistTable
-from mapf_utils import PibtConfig, PibtConfigs, PibtCoord, PibtGrid, get_neighbors
+from solvers_ext.pypibt.dist_table import PibtDistTable
+from solvers_ext.pypibt.mapf_utils import PibtConfig, PibtConfigs, PibtCoord, PibtGrid, get_neighbors
 
 
 class PIBT:

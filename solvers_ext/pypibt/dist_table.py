@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from mapf_utils import PibtCoord, PibtGrid, get_neighbors, is_valid_coord
+from solvers_ext.pypibt.mapf_utils import PibtCoord, PibtGrid, get_neighbors, is_valid_coord
 
 
 @dataclass

@@ -76,7 +76,7 @@ class MapWindow(QMainWindow):
         
         self.steps_label = QLabel(f"Steps: {self.step_count}")
         self.speed_label = QLabel(f"Speed: {self.tick_interval}ms")
-        self.tasks_label = QLabel(f"Tasks: {len(simulation.tasks)}")
+        self.tasks_label = QLabel(f"Tasks: 0/{len(simulation.tasks)}")
         
         button_layout.addWidget(self.steps_label)
         button_layout.addWidget(self.speed_label)
@@ -151,9 +151,11 @@ class MapWindow(QMainWindow):
     
     def update_stats(self):
         """Update the statistics labels"""
+        from models.task import Task
+        completed = sum(1 for t in self.simulation.tasks if t.status == Task.STATUS_COMPLETED)
         self.steps_label.setText(f"Steps: {self.step_count}")
         self.speed_label.setText(f"Speed: {self.tick_interval}ms")
-        self.tasks_label.setText(f"Tasks: {len(self.simulation.tasks)}")
+        self.tasks_label.setText(f"Tasks: {completed}/{len(self.simulation.tasks)}")
 
 
 class MapCanvas(QWidget):
@@ -214,35 +216,51 @@ class MapCanvas(QWidget):
                 painter.setPen(QPen(QColor(0, 0, 0), 1))
                 painter.drawRect(rect)
         
-        # Draw tasks (only pending or assigned)
+        # Draw tasks
         from models.task import Task
+        delivery_color = QColor(255, 165, 0)  # Orange for delivery locations
         for task in self.simulation.tasks:
-            # Only draw pending or assigned tasks
-            if task.status not in [Task.STATUS_PENDING, Task.STATUS_ASSIGNED]:
-                continue
-                
-            task_rect = QRect(
-                int(task.x * cell_size + offset_x),
-                int(task.y * cell_size + offset_y),
-                int(cell_size),
-                int(cell_size)
-            )
-            painter.fillRect(task_rect, self.task_color)
-            
-            # Draw agent ID on task if assigned
-            assigned_agent = None
-            for agent in self.simulation.agents:
-                if agent.task == task:
-                    assigned_agent = agent
-                    break
-            
-            if assigned_agent:
-                painter.setPen(QPen(QColor(255, 255, 255), 2))
-                font = QFont()
-                font.setPointSize(max(10, int(cell_size / 2.5)))
-                font.setBold(True)
-                painter.setFont(font)
-                painter.drawText(task_rect, Qt.AlignmentFlag.AlignCenter, str(assigned_agent.id))
+            # Draw pending tasks (pickup location)
+            if task.status == Task.STATUS_PENDING:
+                task_rect = QRect(
+                    int(task.x * cell_size + offset_x),
+                    int(task.y * cell_size + offset_y),
+                    int(cell_size),
+                    int(cell_size)
+                )
+                painter.fillRect(task_rect, self.task_color)
+
+                # Draw agent ID if task is targeted by an agent
+                for agent in self.simulation.agents:
+                    if agent.target_task == task:
+                        painter.setPen(QPen(QColor(255, 255, 255), 2))
+                        font = QFont()
+                        font.setPointSize(max(10, int(cell_size / 2.5)))
+                        font.setBold(True)
+                        painter.setFont(font)
+                        painter.drawText(task_rect, Qt.AlignmentFlag.AlignCenter, str(agent.id))
+                        break
+
+            # Draw delivering tasks (delivery location)
+            if task.status == Task.STATUS_DELIVERING and task.delivery_x is not None:
+                delivery_rect = QRect(
+                    int(task.delivery_x * cell_size + offset_x),
+                    int(task.delivery_y * cell_size + offset_y),
+                    int(cell_size),
+                    int(cell_size)
+                )
+                painter.fillRect(delivery_rect, delivery_color)
+
+                # Draw agent ID on delivery location
+                for agent in self.simulation.agents:
+                    if agent.task == task:
+                        painter.setPen(QPen(QColor(255, 255, 255), 2))
+                        font = QFont()
+                        font.setPointSize(max(10, int(cell_size / 2.5)))
+                        font.setBold(True)
+                        painter.setFont(font)
+                        painter.drawText(delivery_rect, Qt.AlignmentFlag.AlignCenter, str(agent.id))
+                        break
         
         # Draw agents as circles
         for agent in self.simulation.agents:

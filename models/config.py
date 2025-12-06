@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 
-
-Coord = tuple[int, int]  # (x, y)
+from models.coord import Coord
 
 
 @dataclass
