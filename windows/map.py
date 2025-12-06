@@ -244,7 +244,7 @@ class MapCanvas(QWidget):
                 painter.setFont(font)
                 painter.drawText(task_rect, Qt.AlignmentFlag.AlignCenter, str(assigned_agent.id))
         
-        # Draw agents
+        # Draw agents as circles
         for agent in self.simulation.agents:
             agent_rect = QRect(
                 int(agent.x * cell_size + offset_x),
@@ -252,7 +252,9 @@ class MapCanvas(QWidget):
                 int(cell_size),
                 int(cell_size)
             )
-            painter.fillRect(agent_rect, self.agent_color)
+            painter.setBrush(self.agent_color)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(agent_rect)
             
             # Draw agent ID
             painter.setPen(QPen(QColor(255, 255, 255), 2))

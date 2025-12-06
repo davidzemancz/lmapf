@@ -5,7 +5,7 @@ from models.agent import Agent
 from models.layout import Layout
 
 
-def initialize_positions(agents: List[Agent], layout: Layout) -> None:
+def initialize_positions_randomly(agents: List[Agent], layout: Layout) -> None:
     """Randomly initialize agent positions on empty cells of the layout"""
     empty_cells = [
         (x, y)

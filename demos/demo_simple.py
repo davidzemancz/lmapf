@@ -6,7 +6,7 @@ from models.task import Task
 from simulations.simple_simulation import SimpleSimulation
 from windows.map import MapWindow
 from generators.layout import storage_floor, storage_walls, obstacle_walls
-from generators.agent import initialize_positions
+from generators.agent import initialize_positions_randomly
 from generators.task import random_next
 
 
@@ -18,7 +18,7 @@ def demo_simple():
     agents = [Agent(id=i, x=0, y=0) for i in range(10)]
 
     # Initialize agent positions
-    initialize_positions(agents, layout)
+    initialize_positions_randomly(agents, layout)
 
     # Create some initial tasks
     tasks = [random_next(layout) for _ in range(0)]
