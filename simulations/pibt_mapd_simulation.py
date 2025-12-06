@@ -2,13 +2,12 @@ import random
 
 import numpy as np
 
-from solvers_ext.pypibt.dist_table import PibtDistTable
-from solvers_ext.pypibt.mapf_utils import PibtGrid, PibtCoord
-
 from models.simulation import SimulationBase
 from models.task import Task
 from models.agent import Agent
-from models.layout import Layout
+from models.layout import Layout, Grid
+from models.coord import Coord
+from models.dist_table import DistTable, get_neighbors
 
 
 class PIBTMAPDSimulation(SimulationBase):
@@ -21,27 +20,25 @@ class PIBTMAPDSimulation(SimulationBase):
     3. Updates agent positions and task states
     """
 
-    grid: PibtGrid
-    dist_tables: dict[PibtCoord, PibtDistTable]
+    dist_tables: dict[Coord, DistTable]
     occupied_now: np.ndarray
     occupied_nxt: np.ndarray
     NIL: int
-    NIL_COORD: PibtCoord
+    NIL_COORD: Coord
     rng: random.Random
 
     def __init__(self, layout: Layout, agents: list[Agent], tasks: list[Task], seed: int = 0):
         super().__init__(layout, agents, tasks)
 
-        self.grid = self._layout_to_grid()
         self.rng = random.Random(seed)
 
         # Sentinel values
         self.NIL = len(agents)
-        self.NIL_COORD = self.grid.shape
+        self.NIL_COORD = (layout.width, layout.height)  # Invalid coord
 
         # Occupation tracking
-        self.occupied_now = np.full(self.grid.shape, self.NIL, dtype=int)
-        self.occupied_nxt = np.full(self.grid.shape, self.NIL, dtype=int)
+        self.occupied_now = np.full((layout.height, layout.width), self.NIL, dtype=int)
+        self.occupied_nxt = np.full((layout.height, layout.width), self.NIL, dtype=int)
 
         # Distance table cache (lazily populated)
         self.dist_tables = {}
@@ -56,54 +53,37 @@ class PIBTMAPDSimulation(SimulationBase):
             agent.target_task = None
             self.occupied_now[agent.y, agent.x] = agent.id
 
-    def _layout_to_grid(self) -> PibtGrid:
-        """Convert Layout to numpy grid for PIBT.
+    @property
+    def grid(self) -> Grid:
+        """Get the grid from layout."""
+        return self.layout.grid
 
-        Grid format: grid[y, x] -> True: available, False: obstacle
-        """
-        grid = np.zeros((self.layout.height, self.layout.width), dtype=bool)
-        traversable = Layout.traversable_cells()
-        for y in range(self.layout.height):
-            for x in range(self.layout.width):
-                grid[y, x] = self.layout.grid[y][x] in traversable
-        return grid
-
-    def _get_dist_table(self, goal: PibtCoord) -> PibtDistTable:
+    def _get_dist_table(self, goal: Coord) -> DistTable:
         """Get or create distance table for a goal position."""
         if goal not in self.dist_tables:
-            self.dist_tables[goal] = PibtDistTable(self.grid, goal)
+            self.dist_tables[goal] = DistTable(self.grid, goal)
         return self.dist_tables[goal]
 
-    def _path_dist(self, start: PibtCoord, goal: PibtCoord) -> int:
+    def _path_dist(self, start: Coord, goal: Coord) -> int:
         """Get shortest path distance from start to goal."""
         return self._get_dist_table(goal).get(start)
 
-    def _get_neighbors(self, coord: PibtCoord) -> list[PibtCoord]:
+    def _get_neighbors(self, coord: Coord) -> list[Coord]:
         """Get valid neighboring coordinates (4-connected grid)."""
-        y, x = coord
-        neighbors = []
-
-        if x > 0 and self.grid[y, x - 1]:
-            neighbors.append((y, x - 1))
-        if x < self.grid.shape[1] - 1 and self.grid[y, x + 1]:
-            neighbors.append((y, x + 1))
-        if y > 0 and self.grid[y - 1, x]:
-            neighbors.append((y - 1, x))
-        if y < self.grid.shape[0] - 1 and self.grid[y + 1, x]:
-            neighbors.append((y + 1, x))
-
-        return neighbors
+        return get_neighbors(self.grid, coord)
 
     def _assign_task(self, agent: Agent, task: Task) -> None:
         """Assign a task to an agent (agent has reached pickup location)."""
+        assert task.delivery_x is not None and task.delivery_y is not None, \
+            "MAPD tasks must have delivery coordinates"
         agent.task = task
         agent.target_task = None
         task.status = Task.STATUS_DELIVERING
         # Update goal to delivery location
-        agent.goal_y = task.delivery_y
         agent.goal_x = task.delivery_x
+        agent.goal_y = task.delivery_y
 
-    def _func_pibt(self, Q_from: list[PibtCoord], Q_to: list[PibtCoord], i: int) -> bool:
+    def _func_pibt(self, Q_from: list[Coord], Q_to: list[Coord], i: int) -> bool:
         """Core PIBT function for single agent planning with priority inheritance.
 
         Args:
@@ -115,13 +95,14 @@ class PIBTMAPDSimulation(SimulationBase):
             True if successfully assigned a position to agent i, False otherwise.
         """
         agent = self.agents[i]
-        goal = (agent.goal_y, agent.goal_x)
+        goal: Coord = (agent.goal_x, agent.goal_y)
 
         # Compare function for sorting candidates
-        def compare_key(v: PibtCoord) -> tuple[int, int, float]:
+        def compare_key(v: Coord) -> tuple[int, int, float]:
             d = self._path_dist(v, goal)
             # Prefer unoccupied cells (occupied_now check)
-            occupied = 0 if self.occupied_now[v] == self.NIL else 1
+            vx, vy = v
+            occupied = 0 if self.occupied_now[vy, vx] == self.NIL else 1
             return (d, occupied, self.rng.random())
 
         # Get candidates: current position + neighbors
@@ -130,11 +111,12 @@ class PIBTMAPDSimulation(SimulationBase):
         C = sorted(C, key=compare_key)
 
         for v in C:
+            vx, vy = v
             # Avoid vertex collision
-            if self.occupied_nxt[v] != self.NIL:
+            if self.occupied_nxt[vy, vx] != self.NIL:
                 continue
 
-            j = self.occupied_now[v]
+            j = self.occupied_now[vy, vx]
 
             # Avoid edge collision (swap)
             if j != self.NIL and j != i and Q_to[j] == Q_from[i]:
@@ -142,7 +124,7 @@ class PIBTMAPDSimulation(SimulationBase):
 
             # Reserve next location
             Q_to[i] = v
-            self.occupied_nxt[v] = i
+            self.occupied_nxt[vy, vx] = i
 
             # Priority inheritance
             if j != self.NIL and j != i and Q_to[j] == self.NIL_COORD:
@@ -153,10 +135,11 @@ class PIBTMAPDSimulation(SimulationBase):
 
         # Failed to secure node - stay in place
         Q_to[i] = Q_from[i]
-        self.occupied_nxt[Q_from[i]] = i
+        fx, fy = Q_from[i]
+        self.occupied_nxt[fy, fx] = i
         return False
 
-    def step(self) -> list[tuple[int, int]] | None:
+    def step(self) -> list[Coord] | None:
         """Perform one simulation step.
 
         Returns:
@@ -185,8 +168,8 @@ class PIBTMAPDSimulation(SimulationBase):
             best_task = None
 
             for task in unassigned_tasks:
-                pickup_pos = (task.y, task.x)
-                agent_pos = (agent.y, agent.x)
+                pickup_pos: Coord = (task.x, task.y)
+                agent_pos: Coord = (agent.x, agent.y)
                 d = self._path_dist(agent_pos, pickup_pos)
 
                 if d == 0:
@@ -216,12 +199,12 @@ class PIBTMAPDSimulation(SimulationBase):
         sorted_agents = sorted(self.agents, key=priority_key)
 
         # Setup configurations
-        Q_from = [(a.y, a.x) for a in self.agents]
-        Q_to: list[PibtCoord] = [self.NIL_COORD] * len(self.agents)
+        Q_from: list[Coord] = [(a.x, a.y) for a in self.agents]
+        Q_to: list[Coord] = [self.NIL_COORD] * len(self.agents)
 
         # Setup occupied_now
-        for i, pos in enumerate(Q_from):
-            self.occupied_now[pos] = i
+        for i, (x, y) in enumerate(Q_from):
+            self.occupied_now[y, x] = i
 
         # Run PIBT for each agent in priority order
         for agent in sorted_agents:
@@ -229,38 +212,41 @@ class PIBTMAPDSimulation(SimulationBase):
                 self._func_pibt(Q_from, Q_to, agent.id)
 
         # 3. Acting phase - update positions and states
-        positions = []
+        positions: list[Coord] = []
 
         for agent in self.agents:
-            v_now = (agent.y, agent.x)
-            v_next = Q_to[agent.id]
+            v_now: Coord = (agent.x, agent.y)
+            v_next: Coord = Q_to[agent.id]
+            nx, ny = v_next
 
             # Clear occupation
-            if self.occupied_now[v_now] == agent.id:
-                self.occupied_now[v_now] = self.NIL
-            self.occupied_nxt[v_next] = self.NIL
+            ox, oy = v_now
+            if self.occupied_now[oy, ox] == agent.id:
+                self.occupied_now[oy, ox] = self.NIL
+            self.occupied_nxt[ny, nx] = self.NIL
 
             # Update position
-            self.occupied_now[v_next] = agent.id
+            self.occupied_now[ny, nx] = agent.id
 
             # Update priority
-            goal = (agent.goal_y, agent.goal_x)
+            goal: Coord = (agent.goal_x, agent.goal_y)
             agent.elapsed = 0 if v_next == goal else agent.elapsed + 1
 
             # Update agent position
-            agent.y, agent.x = v_next
-            positions.append((agent.x, agent.y))
+            agent.x, agent.y = v_next
+            positions.append(v_next)
 
             # Update task info
             if agent.task is not None:
-                # Check if delivery is complete
-                delivery_pos = (agent.task.delivery_y, agent.task.delivery_x)
+                # Check if delivery is complete (delivery coords guaranteed by _assign_task)
+                assert agent.task.delivery_x is not None and agent.task.delivery_y is not None
+                delivery_pos: Coord = (agent.task.delivery_x, agent.task.delivery_y)
                 if v_next == delivery_pos:
                     agent.task.status = Task.STATUS_COMPLETED
                     agent.task = None
             elif agent.target_task is not None:
                 # Free agent reached pickup location
-                pickup_pos = (agent.target_task.y, agent.target_task.x)
+                pickup_pos: Coord = (agent.target_task.x, agent.target_task.y)
                 if v_next == pickup_pos and agent.target_task.status == Task.STATUS_PENDING:
                     self._assign_task(agent, agent.target_task)
 

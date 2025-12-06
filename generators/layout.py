@@ -13,6 +13,7 @@ def storage_floor(width: int, height: int) -> Layout:
     layout.set_value(0, 0, Layout.CELL_OUTPUT)
 
     layout.compute_storage_cells()
+    layout.compute_output_cells()
 
     return layout
 
@@ -49,6 +50,7 @@ def storage_walls(width: int, height: int) -> Layout:
             layout.set_value(x, height - 1, Layout.CELL_OUTPUT)
 
     layout.compute_storage_cells()
+    layout.compute_output_cells()
 
     return layout
 
@@ -106,5 +108,6 @@ def obstacle_walls(width: int, height: int) -> Layout:
             layout.set_value(x, height - 1, Layout.CELL_OUTPUT)
 
     layout.compute_storage_cells()
+    layout.compute_output_cells()
 
     return layout
