@@ -37,17 +37,17 @@ class PIBTMAPDSimulationWithTaskReveal(PIBTMAPDSimulation):
 
 def pibt_mapd_demo():
     # Create a sample layout with storage cells
-    layout = storage_walls(20, 20)
+    layout = storage_walls(30, 30)
 
     # Create agents
-    num_agents = 20
+    num_agents = 200
     agents = [Agent(id=i, x=0, y=0) for i in range(num_agents)]
 
     # Initialize agent positions randomly
     initialize_positions_randomly(agents, layout)
 
     # Create tasks (initially not revealed)
-    num_tasks = 500
+    num_tasks = 5_000
     tasks = [next_random(layout) for _ in range(num_tasks)]
 
     # Create simulation with task reveal every 10 timesteps

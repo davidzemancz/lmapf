@@ -39,12 +39,10 @@ class MapWindow(QMainWindow):
         self.start_button = QPushButton("Start")
         self.stop_button = QPushButton("Stop")
         self.step_button = QPushButton("Step")
-        self.reset_button = QPushButton("Reset")
         
         button_layout.addWidget(self.start_button)
         button_layout.addWidget(self.stop_button)
         button_layout.addWidget(self.step_button)
-        button_layout.addWidget(self.reset_button)
         
         # Add separator
         separator1 = QFrame()
@@ -93,7 +91,6 @@ class MapWindow(QMainWindow):
         self.start_button.clicked.connect(self.on_start)
         self.stop_button.clicked.connect(self.on_stop)
         self.step_button.clicked.connect(self.on_step)
-        self.reset_button.clicked.connect(self.on_reset)
         self.speed_up_button.clicked.connect(self.on_speed_up)
         self.slow_down_button.clicked.connect(self.on_slow_down)
         
@@ -126,14 +123,6 @@ class MapWindow(QMainWindow):
         self.update_stats()
         self.canvas.update()  # Trigger repaint
         print("Step executed")
-    
-    def on_reset(self):
-        """Handle reset button click"""
-        self.timer.stop()
-        self.step_count = 0
-        self.update_stats()
-        # Reset agents to initial positions - you can implement this as needed
-        print("Reset button clicked")
     
     def on_speed_up(self):
         """Handle speed up button click - decrease interval by 20%"""
